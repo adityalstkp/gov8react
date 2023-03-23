@@ -14,7 +14,9 @@ const config = {
   optimization: {
     minimize: isDevelopment ? false : true,
   },
-  builtins: { emotion: true },
+  builtins: {
+    treeShaking: true,
+  },
 };
 
 module.exports = config;

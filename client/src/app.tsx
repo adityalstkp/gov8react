@@ -1,12 +1,13 @@
-import React from "react";
 import { StrictMode } from "react";
 import { renderToString } from "react-dom/server";
 import { matchRoutes } from "react-router-dom";
-import { renderStylesToString } from "@emotion/server";
 import { StaticRouter } from "react-router-dom/server";
 import AppRoutes from "./routes";
 import { StaticData } from "./model";
 import "./styles/global";
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { extractCritical } from "@emotion/server";
 
 interface AppProps {
   url: string;
@@ -15,13 +16,21 @@ interface AppProps {
 
 interface RenderOutput {
   markup: string;
+  emotionKey: string;
+  emotionCss: string;
+  emotionIds: string[];
 }
+
+const key = "custom";
+const cache = createCache({ key: key });
 
 const App = (props: AppProps) => {
   return (
     <StrictMode>
       <StaticRouter location={props.url}>
-        <AppRoutes staticData={props.staticData} />
+        <CacheProvider value={cache}>
+          <AppRoutes staticData={props.staticData} />
+        </CacheProvider>
       </StaticRouter>
     </StrictMode>
   );
@@ -32,16 +41,25 @@ interface AppArgs {
   staticData: StaticData;
 }
 
-export async function renderApp(args: AppArgs): Promise<RenderOutput> {
+export function renderApp(args: AppArgs): RenderOutput {
   try {
-    const markup = renderStylesToString(
-      renderToString(<App url={args.url} staticData={args.staticData} />)
+    const markup = renderToString(
+      <App url={args.url} staticData={args.staticData} />
     );
-    return { markup };
+    const { html, css, ids } = extractCritical(markup);
+    return {
+      markup: html,
+      emotionIds: ids,
+      emotionKey: key,
+      emotionCss: css,
+    };
   } catch (err) {
     const error = err as Error;
     return {
       markup: error.stack || String(error),
+      emotionCss: "",
+      emotionIds: [""],
+      emotionKey: "",
     };
   }
 }

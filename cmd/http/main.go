@@ -78,8 +78,8 @@ func main() {
 	}
 
 	_, err = v8Ctx.RunScript(`
-    async function runReact(arg) {
-        return await GO_APP.mainApp(arg);
+    function renderReact(arg) {
+        return GO_APP.render(arg);
     }
     function runMatchRoutes(url) {
         return GO_APP.getMatchRoutes(url);

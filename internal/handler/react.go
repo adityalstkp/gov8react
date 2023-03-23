@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
 
 	v8 "rogchap.com/v8go"
@@ -39,7 +40,17 @@ type routeMatch struct {
 }
 
 type markupValue struct {
-	ReactMarkup string `json:"markup"`
+	ReactMarkup string   `json:"markup"`
+	EmotionCss  string   `json:"emotionCss"`
+	EmotionIds  []string `json:"emotionIds"`
+	EmotionKey  string   `json:"emotionKey"`
+}
+
+type templateData struct {
+	ReactApp   string
+	EmotionCss string
+	EmotionIds string
+	EmotionKey string
 }
 
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +105,7 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	runReactApp := fmt.Sprintf(`
-    runReact(%s);
+    renderReact(%s);
     `, appArgs)
 
 	val, err := rH.v8Ctx.RunScript(runReactApp, "main.js")
@@ -104,26 +115,7 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !val.IsPromise() {
-		log.Println("value is not a promise")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	promiseVal, err := rH.resolvePromise(val)
-	if err != nil {
-		log.Println("fail to resolve promise", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if !promiseVal.IsObject() {
-		log.Println("value is not an object")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	valM, err := promiseVal.MarshalJSON()
+	valM, err := val.MarshalJSON()
 	if err != nil {
 		log.Println("json marshall value markup error", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -133,10 +125,14 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	var markup markupValue
 	json.Unmarshal(valM, &markup)
 
-	var templateData = struct {
-		ReactApp string
-	}{ReactApp: markup.ReactMarkup}
-	err = rH.tmpl.ExecuteTemplate(w, "react.html", templateData)
+	eIds := strings.Join(markup.EmotionIds, " ")
+	tData := templateData{
+		ReactApp:   markup.ReactMarkup,
+		EmotionCss: markup.EmotionCss,
+		EmotionIds: eIds,
+		EmotionKey: markup.EmotionKey,
+	}
+	err = rH.tmpl.ExecuteTemplate(w, "react.html", tData)
 	if err != nil {
 		log.Println("error execute template", err)
 		w.WriteHeader(http.StatusInternalServerError)

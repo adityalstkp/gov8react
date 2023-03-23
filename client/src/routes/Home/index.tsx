@@ -1,5 +1,9 @@
-import React from "react";
-import { containerStyle, subTitleStyle, wordStyle } from "../../styles/common";
+import {
+  containerStyle,
+  linkStyle,
+  subTitleStyle,
+  wordStyle,
+} from "../../styles/common";
 
 interface HomeProps {
   data: Record<string, unknown>;
@@ -14,6 +18,9 @@ const Home = (props: HomeProps) => {
         <>
           <h3 className={subTitleStyle}>Your User Agent:</h3>
           <p className={wordStyle}>{greet}</p>
+          <a className={linkStyle} href="/about">
+            About
+          </a>
         </>
       )}
     </div>

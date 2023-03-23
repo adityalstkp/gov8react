@@ -25,6 +25,16 @@ export const subTitleStyle = css`
   letter-spacing: 1px;
 `;
 
+export const linkStyle = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font-mono);
+  text-align: center;
+`;
+
 export const containerStyle = css`
   position: absolute;
   top: 0;
@@ -46,7 +56,7 @@ export const containerStyle = css`
     }
 
     ::before {
-      background: var(--secondary-glow);
+      background: var(--primary-glow);
       border-radius: 50%;
       width: 480px;
       height: 360px;
@@ -54,7 +64,7 @@ export const containerStyle = css`
     }
 
     ::after {
-      background: var(--primary-glow);
+      background: var(--secondary-glow);
       width: 240px;
       height: 180px;
       z-index: -1;
