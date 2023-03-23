@@ -1,0 +1,10 @@
+# deps
+node_modules
+
+# dist
+.artifacts
+.bin
+
+
+# misc.
+.DS_Store

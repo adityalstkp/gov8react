@@ -1,0 +1,39 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:dev": "NODE_ENV=development rspack build && NODE_ENV=development rspack build -c rspack.polyfills.config.js",
+    "build:prod": "NODE_ENV=production rspack build && NODE_ENV=production rspack build -c rspack.polyfills.config.js",
+    "postinstall": "node prebuild.js",
+    "tsc": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@emotion/cache": "^11.10.5",
+    "@emotion/css": "^11.10.6",
+    "@emotion/react": "^11.10.6",
+    "@emotion/server": "^11.10.0",
+    "buffer": "^6.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.9.0",
+    "stream": "^0.0.2"
+  },
+  "devDependencies": {
+    "@rspack/cli": "^0.1.1",
+    "@swc-node/register": "^1.6.2",
+    "@swc/core": "^1.3.42",
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.15.5",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "express": "^4.18.2",
+    "glob": "^9.3.2",
+    "typescript": "^5.0.2",
+    "webpack": "^5.76.3"
+  }
+}
