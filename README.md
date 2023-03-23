@@ -2,6 +2,14 @@
 
 React SSR with Go V8 binding
 
+## Command
+For those who want to try
+```sh
+make setup # install deps
+make run-dev # development mode (bundle not minified)
+make run # production mode (bundle minified)
+```
+
 ## Stack
 1. Go (v8 binding)
 2. React

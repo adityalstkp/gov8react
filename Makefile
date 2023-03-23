@@ -1,6 +1,10 @@
 clean-artifacts:
 	rm -rf .artifacts
 
+setup: clean-artifacts
+	go mod tidy
+	(cd client && pnpm i)
+
 run-dev: clean-artifacts
 	(cd client && pnpm build:dev)
 	go run cmd/http/main.go
