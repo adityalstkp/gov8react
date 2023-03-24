@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:dev": "NODE_ENV=development rspack build && NODE_ENV=development rspack build -c rspack.polyfills.config.js",
-    "build:prod": "NODE_ENV=production rspack build && NODE_ENV=production rspack build -c rspack.polyfills.config.js",
+    "rspack": "rspack",
     "postinstall": "node prebuild.js",
     "tsc": "tsc"
   },

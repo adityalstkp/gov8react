@@ -13,19 +13,22 @@ import (
 )
 
 type reactHandler struct {
-	v8Ctx *v8.Context
-	tmpl  *template.Template
+	v8Ctx         *v8.Context
+	tmpl          *template.Template
+	withHydration bool
 }
 
 type ReactHandlerOpts struct {
-	V8Ctx *v8.Context
-	Tmpl  *template.Template
+	V8Ctx         *v8.Context
+	Tmpl          *template.Template
+	WithHydration bool
 }
 
 func NewReactHandler(opts ReactHandlerOpts) *reactHandler {
 	return &reactHandler{
-		v8Ctx: opts.V8Ctx,
-		tmpl:  opts.Tmpl,
+		v8Ctx:         opts.V8Ctx,
+		tmpl:          opts.Tmpl,
+		withHydration: opts.WithHydration,
 	}
 }
 
@@ -47,10 +50,11 @@ type markupValue struct {
 }
 
 type templateData struct {
-	ReactApp   string
-	EmotionCss string
-	EmotionIds string
-	EmotionKey string
+	ReactApp      string
+	EmotionCss    string
+	EmotionIds    string
+	EmotionKey    string
+	WithHydration bool
 }
 
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
@@ -123,10 +127,11 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 
 	eIds := strings.Join(markup.EmotionIds, " ")
 	tData := templateData{
-		ReactApp:   markup.ReactMarkup,
-		EmotionCss: markup.EmotionCss,
-		EmotionIds: eIds,
-		EmotionKey: markup.EmotionKey,
+		ReactApp:      markup.ReactMarkup,
+		EmotionCss:    markup.EmotionCss,
+		EmotionIds:    eIds,
+		EmotionKey:    markup.EmotionKey,
+		WithHydration: rH.withHydration,
 	}
 	err = rH.tmpl.ExecuteTemplate(w, "react.html", tData)
 	if err != nil {

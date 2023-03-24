@@ -6,8 +6,8 @@ import AppRoutes from "./routes";
 import { StaticData } from "./model";
 import "./styles/global";
 import { CacheProvider } from "@emotion/react";
-import createCache from "@emotion/cache";
 import { extractCritical } from "@emotion/server";
+import { EMOTION_CACHE_KEY, createEmotionCache } from "./emotionCache";
 
 interface AppProps {
   url: string;
@@ -21,8 +21,7 @@ interface RenderOutput {
   emotionIds: string[];
 }
 
-const key = "custom";
-const cache = createCache({ key: key });
+const cache = createEmotionCache();
 
 const App = (props: AppProps) => {
   return (
@@ -50,7 +49,7 @@ export function renderApp(args: AppArgs): RenderOutput {
     return {
       markup: html,
       emotionIds: ids,
-      emotionKey: key,
+      emotionKey: EMOTION_CACHE_KEY,
       emotionCss: css,
     };
   } catch (err) {

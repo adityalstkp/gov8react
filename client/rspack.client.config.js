@@ -1,14 +1,20 @@
 const path = require("path");
+const BundleAnalyzerPlugin =
+  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
+const plugins = [];
+
+if (process.env.ANALYZE) {
+  plugins.push(new BundleAnalyzerPlugin());
+}
+
 /** @type {import('@rspack/cli').Configuration} */
 const config = {
-  entry: {
-    main: "./src/app.server.tsx",
-  },
+  entry: "./src/app.client.tsx",
   output: {
-    filename: "server.js",
+    filename: "[name].bundle.js",
     path: path.resolve(__dirname, "..", ".artifacts"),
   },
   optimization: {
@@ -17,6 +23,7 @@ const config = {
   builtins: {
     treeShaking: true,
   },
+  plugins: plugins,
 };
 
 module.exports = config;

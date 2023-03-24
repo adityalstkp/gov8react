@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>gov8react | Go React SSR with V8 Binding</title>
-    <meta charset="UTF-8" />
-    <style data-emotion="{{ .EmotionKey }} {{ .EmotionIds }}">{{ .EmotionCss }}</style>
-  </head>
-  <body>
-    <div id="app">{{ .ReactApp }}</div>
-  </body>
+<head>
+<title>gov8react | Go React SSR with V8 Binding</title>
+<meta charset="UTF-8" />
+<style data-emotion="{{ .EmotionKey }} {{ .EmotionIds }}">{{ .EmotionCss }}</style>
+</head>
+<body>
+<div id="app">{{ .ReactApp }}</div>
+{{ if .WithHydration }}
+<script>
+window.__GO_APP_STATE__={{ .AppState }}
+</script>
+<script async defer src="/static/main.bundle.js"></script>
+{{ end }}
+</body>
+
 </html>
