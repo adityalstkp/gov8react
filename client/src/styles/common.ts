@@ -5,19 +5,7 @@ export const wordStyle = css`
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 4rem 0;
-  font-weight: bold;
-  font-family: var(--font-mono);
-  text-align: center;
-  font-style: normal;
-  letter-spacing: 1px;
-`;
-
-export const subTitleStyle = css`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+  padding: 2rem 0;
   font-weight: bold;
   font-family: var(--font-mono);
   text-align: center;
@@ -32,6 +20,7 @@ export const linkStyle = css`
   text-decoration: none;
   color: inherit;
   font-family: var(--font-mono);
+  cursor: pointer;
   text-align: center;
 `;
 

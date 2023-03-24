@@ -1,21 +1,13 @@
-import {
-  containerStyle,
-  linkStyle,
-  subTitleStyle,
-  wordStyle,
-} from "../../styles/common";
+import { useIntro } from "../../hooks/intro";
+import { containerStyle, linkStyle, wordStyle } from "../../styles/common";
 
 const Home = () => {
-  const greet = "";
+  const { data: greet } = useIntro();
+
   return (
     <div className={containerStyle}>
       <h1 className={wordStyle}>gov8react</h1>
-      {greet && (
-        <>
-          <h3 className={subTitleStyle}>Your User Agent:</h3>
-          <p className={wordStyle}>{greet}</p>
-        </>
-      )}
+      {greet && <p className={wordStyle}>{greet}</p>}
       <a className={linkStyle} href="/about">
         About
       </a>

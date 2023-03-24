@@ -1,1 +1,1 @@
-export type StaticData = Record<string, unknown> | null;
+export type InitialData = Record<string, unknown>;

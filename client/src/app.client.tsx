@@ -4,17 +4,21 @@ import { hydrate } from "react-dom";
 import { AppRoute } from "./routes";
 import { createEmotionCache } from "./emotionCache";
 import { BrowserRouter, Routes } from "react-router-dom";
+import { AppProvider } from "./context/app";
 
 const cache = createEmotionCache();
 
 const App = () => {
-  // @ts-ignore
-  // const initialStaticData = window.__INITIAL_STATE__ || {};
+  // @ts-ignore - too lazy
+  const initialData = window.__GO_APP_STATE__ || {};
+
   return (
     <StrictMode>
       <CacheProvider value={cache}>
         <BrowserRouter>
-          <Routes>{AppRoute}</Routes>
+          <AppProvider initialData={initialData}>
+            <Routes>{AppRoute}</Routes>
+          </AppProvider>
         </BrowserRouter>
       </CacheProvider>
     </StrictMode>

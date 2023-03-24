@@ -6,15 +6,17 @@ import {
   matchRoutes,
 } from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
-import { StaticData } from "./model";
+import { InitialData } from "./model";
 import "./styles/global";
 import { CacheProvider } from "@emotion/react";
 import { extractCritical } from "@emotion/server";
 import { EMOTION_CACHE_KEY, createEmotionCache } from "./emotionCache";
 import { AppRoute } from "./routes";
+import { AppProvider } from "./context/app";
 
 interface AppProps {
   url: string;
+  initialData: Record<string, unknown>;
 }
 
 interface RenderOutput {
@@ -31,7 +33,9 @@ const App = (props: AppProps) => {
     <StrictMode>
       <StaticRouter location={props.url}>
         <CacheProvider value={cache}>
-          <Routes>{AppRoute}</Routes>
+          <AppProvider initialData={props.initialData}>
+            <Routes>{AppRoute}</Routes>
+          </AppProvider>
         </CacheProvider>
       </StaticRouter>
     </StrictMode>
@@ -40,12 +44,14 @@ const App = (props: AppProps) => {
 
 interface AppArgs {
   url: string;
-  staticData: StaticData;
+  initialData: InitialData;
 }
 
 export function renderApp(args: AppArgs): RenderOutput {
   try {
-    const markup = renderToString(<App url={args.url} />);
+    const markup = renderToString(
+      <App url={args.url} initialData={args.initialData} />
+    );
     const { html, css, ids } = extractCritical(markup);
     return {
       markup: html,
