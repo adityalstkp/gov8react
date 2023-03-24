@@ -1,14 +1,16 @@
+NODE_ENV:="development"
+
 clean-artifacts:
 	rm -rf .artifacts
 
 build-react-client: 
-	(cd client && NODE_ENV=$(node_env) pnpm rspack -c rspack.client.config.js)
+	(cd client && NODE_ENV=$(NODE_ENV) pnpm rspack -c rspack.client.config.js)
 
 build-react-server: 
-	(cd client && NODE_ENV=$(node_env) pnpm rspack -c rspack.server.config.js)
+	(cd client && NODE_ENV=$(NODE_ENV) pnpm rspack -c rspack.server.config.js)
 
 build-polyfills: 
-	(cd client && NODE_ENV=$(node_env) pnpm rspack -c rspack.polyfills.config.js)
+	(cd client && NODE_ENV=$(NODE_ENV) pnpm rspack -c rspack.polyfills.config.js)
 
 setup: clean-artifacts
 	go mod tidy
