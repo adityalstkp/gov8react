@@ -1,4 +1,3 @@
-
 clean-artifacts:
 	rm -rf .artifacts
 
@@ -15,8 +14,4 @@ setup: clean-artifacts
 	go mod tidy
 	(cd client && pnpm i)
 
-run-dev: clean-artifacts build-react-client build-react-server build-polyfills
-	go run cmd/http/*.go
-
-run: clean-artifacts build-react-client build-react-server build-polyfills
-	go build -o .bin/gov8react cmd/http/*.go && .bin/gov8react
+build-all-client: clean-artifacts build-react-client build-react-server build-polyfills
