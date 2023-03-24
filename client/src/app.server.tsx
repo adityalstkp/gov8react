@@ -68,3 +68,8 @@ export function getMatchRoutes(url: string) {
   const match = matchRoutes([{ path: "/" }, { path: "/about" }], url);
   return match;
 }
+
+// @ts-ignore - use for go communication
+GO_APP.render = renderApp;
+// @ts-ignore - use for go communication
+GO_APP.getMatchRoutes = getMatchRoutes;

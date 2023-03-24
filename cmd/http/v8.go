@@ -32,25 +32,13 @@ func newV8Ctx() (*v8.Context, error) {
 		return nil, err
 	}
 
-	appBundlePath := fmt.Sprintf("%s/main.js", constants.BASE_ARTIFACTS_DIR)
+	appBundlePath := fmt.Sprintf("%s/server.js", constants.BASE_ARTIFACTS_DIR)
 	appBundle, err := utilities.ReadFile(appBundlePath)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = v8Ctx.RunScript(string(appBundle), "bundle.js")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = v8Ctx.RunScript(`
-    function renderReact(arg) {
-        return GO_APP.render(arg);
-    }
-    function runMatchRoutes(url) {
-        return GO_APP.getMatchRoutes(url);
-    }
-    `, "register_main.js")
+	_, err = v8Ctx.RunScript(string(appBundle), "server.js")
 	if err != nil {
 		return nil, err
 	}

@@ -56,9 +56,7 @@ type templateData struct {
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 
-	runMatchRoutes := fmt.Sprintf(`
-    runMatchRoutes("%s");
-    `, reqUrl)
+	runMatchRoutes := fmt.Sprintf(`GO_APP.getMatchRoutes("%s")`, reqUrl)
 	match, err := rH.v8Ctx.RunScript(runMatchRoutes, "match_routes.js")
 	if err != nil {
 		log.Println("error run match_routes.js", err)
@@ -104,13 +102,11 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	runReactApp := fmt.Sprintf(`
-    renderReact(%s);
-    `, appArgs)
+	runReactApp := fmt.Sprintf(`GO_APP.render(%s)`, appArgs)
 
-	val, err := rH.v8Ctx.RunScript(runReactApp, "main.js")
+	val, err := rH.v8Ctx.RunScript(runReactApp, "render.js")
 	if err != nil {
-		log.Println("error run main.js", err)
+		log.Println("error run render.js", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

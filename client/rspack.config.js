@@ -5,10 +5,10 @@ const isDevelopment = process.env.NODE_ENV === "development";
 /** @type {import('@rspack/cli').Configuration} */
 const config = {
   entry: {
-    main: "./src/index.ts",
+    main: "./src/app.server.tsx",
   },
   output: {
-    filename: "main.js",
+    filename: "server.js",
     path: path.resolve(__dirname, "..", ".artifacts"),
   },
   optimization: {
