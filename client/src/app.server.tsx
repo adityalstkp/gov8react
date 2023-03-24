@@ -1,17 +1,20 @@
 import { StrictMode } from "react";
 import { renderToString } from "react-dom/server";
-import { matchRoutes } from "react-router-dom";
+import {
+  Routes,
+  createRoutesFromElements,
+  matchRoutes,
+} from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
-import AppRoutes from "./routes";
 import { StaticData } from "./model";
 import "./styles/global";
 import { CacheProvider } from "@emotion/react";
 import { extractCritical } from "@emotion/server";
 import { EMOTION_CACHE_KEY, createEmotionCache } from "./emotionCache";
+import { AppRoute } from "./routes";
 
 interface AppProps {
   url: string;
-  staticData: StaticData;
 }
 
 interface RenderOutput {
@@ -28,7 +31,7 @@ const App = (props: AppProps) => {
     <StrictMode>
       <StaticRouter location={props.url}>
         <CacheProvider value={cache}>
-          <AppRoutes staticData={props.staticData} />
+          <Routes>{AppRoute}</Routes>
         </CacheProvider>
       </StaticRouter>
     </StrictMode>
@@ -42,9 +45,7 @@ interface AppArgs {
 
 export function renderApp(args: AppArgs): RenderOutput {
   try {
-    const markup = renderToString(
-      <App url={args.url} staticData={args.staticData} />
-    );
+    const markup = renderToString(<App url={args.url} />);
     const { html, css, ids } = extractCritical(markup);
     return {
       markup: html,
@@ -64,7 +65,7 @@ export function renderApp(args: AppArgs): RenderOutput {
 }
 
 export function getMatchRoutes(url: string) {
-  const match = matchRoutes([{ path: "/" }, { path: "/about" }], url);
+  const match = matchRoutes(createRoutesFromElements(AppRoute), url);
   return match;
 }
 

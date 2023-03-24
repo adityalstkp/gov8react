@@ -5,12 +5,8 @@ import {
   wordStyle,
 } from "../../styles/common";
 
-interface HomeProps {
-  data: Record<string, unknown>;
-}
-
-const Home = (props: HomeProps) => {
-  const greet = props.data.greet as string;
+const Home = () => {
+  const greet = "";
   return (
     <div className={containerStyle}>
       <h1 className={wordStyle}>gov8react</h1>
@@ -18,11 +14,11 @@ const Home = (props: HomeProps) => {
         <>
           <h3 className={subTitleStyle}>Your User Agent:</h3>
           <p className={wordStyle}>{greet}</p>
-          <a className={linkStyle} href="/about">
-            About
-          </a>
         </>
       )}
+      <a className={linkStyle} href="/about">
+        About
+      </a>
     </div>
   );
 };

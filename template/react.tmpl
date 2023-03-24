@@ -9,7 +9,7 @@
 <div id="app">{{ .ReactApp }}</div>
 {{ if .WithHydration }}
 <script>
-window.__GO_APP_STATE__={{ .AppState }}
+window.__GO_APP_STATE__={{ .AppState }};
 </script>
 <script async defer src="/static/main.bundle.js"></script>
 {{ end }}

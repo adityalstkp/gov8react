@@ -53,6 +53,7 @@ export const containerStyle = css`
       position: absolute;
       filter: blur(45px);
       transform: translateZ(0);
+      z-index: -1;
     }
 
     ::before {

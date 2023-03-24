@@ -36,10 +36,15 @@ type ReactHandlerRouter interface {
 	RenderReact(w http.ResponseWriter, r *http.Request)
 }
 
+type route struct {
+	Path string `json:"path"`
+}
+
 type routeMatch struct {
 	Params       interface{} `json:"params"`
 	Pathname     string      `json:"pathname"`
 	PathnameBase string      `json:"pathnameBase"`
+	Route        route       `json:"route"`
 }
 
 type markupValue struct {
@@ -55,6 +60,7 @@ type templateData struct {
 	EmotionIds    string
 	EmotionKey    string
 	WithHydration bool
+	AppState      string
 }
 
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +69,9 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	runMatchRoutes := fmt.Sprintf(`GO_APP.getMatchRoutes("%s")`, reqUrl)
 	match, err := rH.v8Ctx.RunScript(runMatchRoutes, "match_routes.js")
 	if err != nil {
+		e := err.(*v8.JSError)
+		fmt.Println(e.StackTrace)
+
 		log.Println("error run match_routes.js", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -89,7 +98,7 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var staticData map[string]interface{}
-	matchRoute := rM[0].Pathname
+	matchRoute := rM[0].Route.Path
 	if matchRoute == "/" {
 		staticData = make(map[string]interface{})
 		staticData["greet"] = r.Header.Get("user-agent")
@@ -132,6 +141,7 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		EmotionIds:    eIds,
 		EmotionKey:    markup.EmotionKey,
 		WithHydration: rH.withHydration,
+		AppState:      "{}",
 	}
 	err = rH.tmpl.ExecuteTemplate(w, "react.html", tData)
 	if err != nil {
