@@ -1,17 +1,22 @@
 import { StrictMode } from "react";
 import { renderToString } from "react-dom/server";
-import { matchRoutes } from "react-router-dom";
+import {
+  Routes,
+  createRoutesFromElements,
+  matchRoutes,
+} from "react-router-dom";
 import { StaticRouter } from "react-router-dom/server";
-import AppRoutes from "./routes";
-import { StaticData } from "./model";
+import { InitialData } from "./model";
 import "./styles/global";
 import { CacheProvider } from "@emotion/react";
-import createCache from "@emotion/cache";
 import { extractCritical } from "@emotion/server";
+import { EMOTION_CACHE_KEY, createEmotionCache } from "./emotionCache";
+import { AppRoute } from "./routes";
+import { AppProvider } from "./context/app";
 
 interface AppProps {
   url: string;
-  staticData: StaticData;
+  initialData: Record<string, unknown>;
 }
 
 interface RenderOutput {
@@ -21,15 +26,16 @@ interface RenderOutput {
   emotionIds: string[];
 }
 
-const key = "custom";
-const cache = createCache({ key: key });
+const cache = createEmotionCache();
 
 const App = (props: AppProps) => {
   return (
     <StrictMode>
       <StaticRouter location={props.url}>
         <CacheProvider value={cache}>
-          <AppRoutes staticData={props.staticData} />
+          <AppProvider initialData={props.initialData}>
+            <Routes>{AppRoute}</Routes>
+          </AppProvider>
         </CacheProvider>
       </StaticRouter>
     </StrictMode>
@@ -38,19 +44,19 @@ const App = (props: AppProps) => {
 
 interface AppArgs {
   url: string;
-  staticData: StaticData;
+  initialData: InitialData;
 }
 
 export function renderApp(args: AppArgs): RenderOutput {
   try {
     const markup = renderToString(
-      <App url={args.url} staticData={args.staticData} />
+      <App url={args.url} initialData={args.initialData} />
     );
     const { html, css, ids } = extractCritical(markup);
     return {
       markup: html,
       emotionIds: ids,
-      emotionKey: key,
+      emotionKey: EMOTION_CACHE_KEY,
       emotionCss: css,
     };
   } catch (err) {
@@ -65,7 +71,7 @@ export function renderApp(args: AppArgs): RenderOutput {
 }
 
 export function getMatchRoutes(url: string) {
-  const match = matchRoutes([{ path: "/" }, { path: "/about" }], url);
+  const match = matchRoutes(createRoutesFromElements(AppRoute), url);
   return match;
 }
 

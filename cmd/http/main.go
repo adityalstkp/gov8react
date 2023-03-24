@@ -13,14 +13,17 @@ import (
 
 	"github.com/adityalstkp/gov8react/internal/constants"
 	"github.com/adityalstkp/gov8react/internal/handler"
+	"github.com/adityalstkp/gov8react/internal/usecase"
 	"github.com/adityalstkp/gov8react/internal/utilities"
 	"github.com/go-chi/chi/v5"
 )
 
 var httpAddr string
+var withHydration bool
 
 func init() {
 	flag.StringVar(&httpAddr, "http_addr", "0.0.0.0:3000", "http listen address")
+	flag.BoolVar(&withHydration, "with_hydration", false, "render with hydration")
 	flag.Parse()
 }
 
@@ -35,12 +38,21 @@ func main() {
 	if err != nil {
 		log.Panicln("error create template", err)
 	}
-	reactHandler := handler.NewReactHandler(handler.ReactHandlerOpts{
-		V8Ctx: v8Ctx,
-		Tmpl:  tmpl,
-	})
 
-	server := http.Server{Addr: httpAddr, Handler: NewHandler(httpHandler{reactHandler: reactHandler})}
+	introUsecase := usecase.NewIntroUsecase()
+	reactHandler := handler.NewReactHandler(handler.ReactHandlerOpts{
+		V8Ctx:         v8Ctx,
+		Tmpl:          tmpl,
+		WithHydration: withHydration,
+		IntroUsecase:  introUsecase,
+	})
+	introHandler := handler.NewIntroHandler(handler.IntroHandlerOpts{IntroUsecase: introUsecase})
+
+	server := http.Server{Addr: httpAddr,
+		Handler: NewHandler(httpHandler{
+			reactHandler: reactHandler,
+			introHandler: introHandler}),
+	}
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
 	sig := make(chan os.Signal, 1)
@@ -76,10 +88,18 @@ func main() {
 
 type httpHandler struct {
 	reactHandler handler.ReactHandlerRouter
+	introHandler handler.IntroHandlerRouter
 }
 
 func NewHandler(h httpHandler) http.Handler {
 	r := chi.NewRouter()
+
+	staticFs := http.FileServer(http.Dir(constants.BASE_ARTIFACTS_DIR))
+	r.Handle("/static/*", http.StripPrefix("/static/", staticFs))
+
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/intro", h.introHandler.Greet)
+	})
 	r.Get("/*", h.reactHandler.RenderReact)
 
 	return r

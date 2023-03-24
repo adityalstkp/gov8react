@@ -1,28 +1,22 @@
-import {
-  containerStyle,
-  linkStyle,
-  subTitleStyle,
-  wordStyle,
-} from "../../styles/common";
+import { useNavigate } from "react-router-dom";
+import { useIntro } from "../../hooks/intro";
+import { containerStyle, linkStyle, wordStyle } from "../../styles/common";
 
-interface HomeProps {
-  data: Record<string, unknown>;
-}
+const Home = () => {
+  const { data: greet } = useIntro();
+  const navigate = useNavigate();
 
-const Home = (props: HomeProps) => {
-  const greet = props.data.greet as string;
+  const handleToAbout = () => {
+    navigate("/about");
+  };
+
   return (
     <div className={containerStyle}>
       <h1 className={wordStyle}>gov8react</h1>
-      {greet && (
-        <>
-          <h3 className={subTitleStyle}>Your User Agent:</h3>
-          <p className={wordStyle}>{greet}</p>
-          <a className={linkStyle} href="/about">
-            About
-          </a>
-        </>
-      )}
+      {greet && <p className={wordStyle}>{greet}</p>}
+      <a className={linkStyle} onClick={handleToAbout}>
+        About
+      </a>
     </div>
   );
 };

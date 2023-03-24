@@ -9,23 +9,30 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/adityalstkp/gov8react/internal/usecase"
 	v8 "rogchap.com/v8go"
 )
 
 type reactHandler struct {
-	v8Ctx *v8.Context
-	tmpl  *template.Template
+	v8Ctx         *v8.Context
+	tmpl          *template.Template
+	withHydration bool
+	introUsecase  usecase.IntroUsecase
 }
 
 type ReactHandlerOpts struct {
-	V8Ctx *v8.Context
-	Tmpl  *template.Template
+	V8Ctx         *v8.Context
+	Tmpl          *template.Template
+	WithHydration bool
+	IntroUsecase  usecase.IntroUsecase
 }
 
 func NewReactHandler(opts ReactHandlerOpts) *reactHandler {
 	return &reactHandler{
-		v8Ctx: opts.V8Ctx,
-		tmpl:  opts.Tmpl,
+		v8Ctx:         opts.V8Ctx,
+		tmpl:          opts.Tmpl,
+		withHydration: opts.WithHydration,
+		introUsecase:  opts.IntroUsecase,
 	}
 }
 
@@ -33,10 +40,15 @@ type ReactHandlerRouter interface {
 	RenderReact(w http.ResponseWriter, r *http.Request)
 }
 
+type route struct {
+	Path string `json:"path"`
+}
+
 type routeMatch struct {
 	Params       interface{} `json:"params"`
 	Pathname     string      `json:"pathname"`
 	PathnameBase string      `json:"pathnameBase"`
+	Route        route       `json:"route"`
 }
 
 type markupValue struct {
@@ -47,10 +59,12 @@ type markupValue struct {
 }
 
 type templateData struct {
-	ReactApp   string
-	EmotionCss string
-	EmotionIds string
-	EmotionKey string
+	ReactApp      string
+	EmotionCss    string
+	EmotionIds    string
+	EmotionKey    string
+	WithHydration bool
+	AppState      string
 }
 
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +73,8 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	runMatchRoutes := fmt.Sprintf(`GO_APP.getMatchRoutes("%s")`, reqUrl)
 	match, err := rH.v8Ctx.RunScript(runMatchRoutes, "match_routes.js")
 	if err != nil {
+		e := err.(*v8.JSError)
+		log.Println(e.StackTrace)
 		log.Println("error run match_routes.js", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -84,16 +100,23 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var staticData map[string]interface{}
-	matchRoute := rM[0].Pathname
-	if matchRoute == "/" {
-		staticData = make(map[string]interface{})
-		staticData["greet"] = r.Header.Get("user-agent")
+	initialData := map[string]interface{}{}
+	matchRoute := rM[0].Route.Path
+
+	sD, err := rH.getInitialData(matchRoute)
+	if err != nil {
+		log.Println("cannot get initial data", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if sD != nil {
+		initialData[matchRoute] = sD
 	}
 
 	reactAppArgs := map[string]interface{}{
-		"url":        reqUrl,
-		"staticData": staticData,
+		"url":         reqUrl,
+		"initialData": initialData,
 	}
 	appArgs, err := json.Marshal(reactAppArgs)
 	if err != nil {
@@ -121,18 +144,41 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	var markup markupValue
 	json.Unmarshal(valM, &markup)
 
+	sS, err := json.Marshal(initialData)
+	if err != nil {
+		log.Println("cannot marshal static data", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	eIds := strings.Join(markup.EmotionIds, " ")
 	tData := templateData{
-		ReactApp:   markup.ReactMarkup,
-		EmotionCss: markup.EmotionCss,
-		EmotionIds: eIds,
-		EmotionKey: markup.EmotionKey,
+		ReactApp:      markup.ReactMarkup,
+		EmotionCss:    markup.EmotionCss,
+		EmotionIds:    eIds,
+		EmotionKey:    markup.EmotionKey,
+		WithHydration: rH.withHydration,
+		AppState:      string(sS),
 	}
 	err = rH.tmpl.ExecuteTemplate(w, "react.html", tData)
 	if err != nil {
 		log.Println("error execute template", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+}
+
+func (rH *reactHandler) getInitialData(matchRoute string) (interface{}, error) {
+	switch matchRoute {
+	case "/":
+		d, err := rH.introUsecase.Greet()
+		if err != nil {
+			return nil, err
+		}
+
+		return d, nil
+	default:
+		return nil, nil
 	}
 }
 
