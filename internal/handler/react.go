@@ -70,25 +70,30 @@ type templateData struct {
 func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	reqUrl := r.URL.String()
 
+	httpStatusCode := http.StatusOK
 	runMatchRoutes := fmt.Sprintf(`GO_APP.getMatchRoutes("%s")`, reqUrl)
 	match, err := rH.v8Ctx.RunScript(runMatchRoutes, "match_routes.js")
+
 	if err != nil {
+		httpStatusCode = http.StatusInternalServerError
 		e := err.(*v8.JSError)
 		log.Println(e.StackTrace)
 		log.Println("error run match_routes.js", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
 	if !match.IsArray() {
-		w.WriteHeader(http.StatusNotFound)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
 	mJson, err := match.MarshalJSON()
 	if err != nil {
 		log.Println("cannot marshall route match")
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
@@ -96,17 +101,23 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(mJson, &rM)
 	if err != nil {
 		log.Println("cannot umarshall route match")
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
 	initialData := map[string]interface{}{}
 	matchRoute := rM[0].Route.Path
 
+	if rM[0].Route.Path == "*" {
+		httpStatusCode = http.StatusNotFound
+	}
+
 	sD, err := rH.getInitialData(matchRoute)
 	if err != nil {
+		httpStatusCode = http.StatusInternalServerError
 		log.Println("cannot get initial data", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
@@ -121,23 +132,25 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	appArgs, err := json.Marshal(reactAppArgs)
 	if err != nil {
 		log.Println("json marshall app args error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
 	runReactApp := fmt.Sprintf(`GO_APP.render(%s)`, appArgs)
-
 	val, err := rH.v8Ctx.RunScript(runReactApp, "render.js")
 	if err != nil {
 		log.Println("error run render.js", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
 	valM, err := val.MarshalJSON()
 	if err != nil {
 		log.Println("json marshall value markup error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
@@ -147,7 +160,8 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 	sS, err := json.Marshal(initialData)
 	if err != nil {
 		log.Println("cannot marshal static data", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 
@@ -160,10 +174,13 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		WithHydration: rH.withHydration,
 		AppState:      string(sS),
 	}
+
+	w.WriteHeader(httpStatusCode)
 	err = rH.tmpl.ExecuteTemplate(w, "react.html", tData)
 	if err != nil {
 		log.Println("error execute template", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		httpStatusCode = http.StatusInternalServerError
+		w.WriteHeader(httpStatusCode)
 		return
 	}
 }

@@ -21,6 +21,7 @@ go run cmd/http/*.go -with_hydration true
 
 ## Current State
 1. Hydration will load large bundle
+2. React is only for the UI and will not be as data fetcher (like `graphql` SSR or anything), data to React is always coming from go, see `GO_APP.render(args)` function.
 
 ## Stack
 1. Go (v8 binding)
