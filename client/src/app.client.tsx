@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { CacheProvider } from "@emotion/react";
-import { hydrate } from "react-dom";
+import { hydrateRoot } from "react-dom/client";
 import { AppRoute } from "./routes";
 import { createEmotionCache } from "./emotionCache";
 import { BrowserRouter, Routes } from "react-router-dom";
@@ -25,4 +25,4 @@ const App = () => {
   );
 };
 
-hydrate(<App />, document.getElementById("app"));
+hydrateRoot(document.getElementById("app") as HTMLElement, <App />);

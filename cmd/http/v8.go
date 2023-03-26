@@ -32,7 +32,7 @@ func newV8Ctx() (*v8.Context, error) {
 		return nil, err
 	}
 
-	appBundlePath := fmt.Sprintf("%s/server.js", constants.BASE_ARTIFACTS_DIR)
+	appBundlePath := fmt.Sprintf("%s/main.server.js", constants.BASE_ARTIFACTS_DIR)
 	appBundle, err := utilities.ReadFile(appBundlePath)
 	if err != nil {
 		return nil, err

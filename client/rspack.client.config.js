@@ -14,7 +14,7 @@ if (process.env.ANALYZE) {
 const config = {
   entry: "./src/app.client.tsx",
   output: {
-    filename: "[name].bundle.js",
+    filename: "[name].client.js",
     path: path.resolve(__dirname, "..", ".artifacts"),
   },
   optimization: {
