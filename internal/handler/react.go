@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/adityalstkp/gov8react/internal/constants"
 	"github.com/adityalstkp/gov8react/internal/usecase"
 	v8 "rogchap.com/v8go"
 )
@@ -51,18 +52,26 @@ type routeMatch struct {
 	Route        route       `json:"route"`
 }
 
+type emotionMarkup struct {
+	Css string   `json:"css"`
+	Key string   `json:"key"`
+	Ids []string `json:"ids"`
+}
+
 type markupValue struct {
-	ReactMarkup string   `json:"markup"`
-	EmotionCss  string   `json:"emotionCss"`
-	EmotionIds  []string `json:"emotionIds"`
-	EmotionKey  string   `json:"emotionKey"`
+	Html    string        `json:"html"`
+	Emotion emotionMarkup `json:"emotion"`
+}
+
+type emotionTemplate struct {
+	Css string
+	Key string
+	Ids string
 }
 
 type templateData struct {
 	ReactApp      string
-	EmotionCss    string
-	EmotionIds    string
-	EmotionKey    string
+	Emotion       emotionTemplate
 	WithHydration bool
 	AppState      string
 }
@@ -165,12 +174,14 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eIds := strings.Join(markup.EmotionIds, " ")
+	eIds := strings.Join(markup.Emotion.Ids, " ")
 	tData := templateData{
-		ReactApp:      markup.ReactMarkup,
-		EmotionCss:    markup.EmotionCss,
-		EmotionIds:    eIds,
-		EmotionKey:    markup.EmotionKey,
+		ReactApp: markup.Html,
+		Emotion: emotionTemplate{
+			Css: markup.Emotion.Css,
+			Ids: eIds,
+			Key: markup.Emotion.Key,
+		},
 		WithHydration: rH.withHydration,
 		AppState:      string(sS),
 	}
@@ -187,7 +198,7 @@ func (rH *reactHandler) RenderReact(w http.ResponseWriter, r *http.Request) {
 
 func (rH *reactHandler) getInitialData(matchRoute string) (interface{}, error) {
 	switch matchRoute {
-	case "/":
+	case constants.REACT_ROUTE_INDEX_PATH:
 		d, err := rH.introUsecase.Greet()
 		if err != nil {
 			return nil, err

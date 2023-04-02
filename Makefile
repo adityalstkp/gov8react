@@ -1,5 +1,7 @@
 NODE_ENV:="development"
 
+.PHONY: clean-artifacts build-react-client build-react-server build-polyfills build-all-client setup 
+
 clean-artifacts:
 	rm -rf .artifacts
 

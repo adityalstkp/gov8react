@@ -13,5 +13,5 @@ type IntroUsecase interface {
 }
 
 func (iU introUsecase) Greet() (model.GreetResponse, error) {
-	return model.GreetResponse{Message: "Hi, nice to meet you!"}, nil
+	return model.GreetResponse{Message: "Hi, we are still working progress!"}, nil
 }
