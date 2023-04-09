@@ -35,5 +35,9 @@ These are the limitation that we found and these may comes because we lack of kn
 2. `@emotion/react` not working, `cache` seems always empty, still don't know.
 3. Code split will be hard things to do, because v8 context cannot refer/lookup webpack split files easily.
 
+
+## Contributing
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Questions
 1. How's the performance?
